@@ -21,13 +21,15 @@ class TESTUNETR(nn.Module):
         super().__init__()
         self.encoder = DummyEncoder()
         self.decoder = UNETRDecoder1(embed_dim,patch_size, input_dim, output_dim)
-
+        # Freeze encoder parameters
+        for param in self.encoder.parameters():
+            param.requires_grad = False
     def forward(self, x):
         features = self.encoder(x)
         print(f'encoder_features : {len(features)}, {features[0].shape}')
         output = self.decoder(x, features)
         return output
-    
+        
     
 class DINOUNETR(nn.Module):
     def __init__(self, embed_dim = 768, patch_size = 14, input_dim = 3, output_dim=3):
@@ -40,7 +42,11 @@ class DINOUNETR(nn.Module):
         
         self.encoder = Dinov2Encoder()
         self.decoder = UNETRDecoder14(embed_dim=self.embed_dim, patch_size=self.patch_size, input_dim=self.input_dim, output_dim=self.output_dim)
-    
+        
+        # Freeze encoder parameters
+        for param in self.encoder.parameters():
+            param.requires_grad = False
+            
     def forward(self, x):
         features = self.encoder(x)
         print(f'encoder_features : {len(features)}, {features[0].shape}')
@@ -58,6 +64,11 @@ class BeiTUNETR(nn.Module):
         
         self.encoder = BEiTv2Encoder()
         self.decoder = UNETRDecoder16(embed_dim=self.embed_dim, patch_size=self.patch_size, input_dim=self.input_dim, output_dim=self.output_dim) 
+
+        # Freeze encoder parameters
+        for param in self.encoder.parameters():
+            param.requires_grad = False
+            
     def forward(self, x):
         features = self.encoder(x)
         print(f'encoder_features : {len(features)}, {features[0].shape}')
@@ -76,7 +87,11 @@ class BLIPUNETR(nn.Module):
         
         self.encoder = BLIPEncoder()
         self.decoder = UNETRDecoder16(embed_dim=self.embed_dim, patch_size=self.patch_size, input_dim=self.input_dim, output_dim=self.output_dim)
-    
+
+        # Freeze encoder parameters
+        for param in self.encoder.parameters():
+            param.requires_grad = False
+            
     def forward(self, x):
         features = self.encoder(x)
         print(f'encoder_features : {len(features)}, {features[0].shape}')
@@ -95,7 +110,11 @@ class OpenClipUNETR(nn.Module):
         
         self.encoder = OpenClipEncoder()
         self.decoder = UNETRDecoder16(embed_dim=self.embed_dim, patch_size=self.patch_size, input_dim=self.input_dim, output_dim=self.output_dim)
-    
+        
+        # Freeze encoder parameters
+        for param in self.encoder.parameters():
+            param.requires_grad = False
+            
     def forward(self, x):
         features = self.encoder(x)
         print(f'encoder_features : {len(features)}, {features[0].shape}')
@@ -114,6 +133,10 @@ class SAMUNETR(nn.Module) :
         
         self.encoder = SamEncoder() 
         self.decoder = SAMDecoder(embed_dim=self.embed_dim, patch_size=self.patch_size, input_dim=self.input_dim, output_dim=self.output_dim)
+
+        # Freeze encoder parameters
+        for param in self.encoder.parameters():
+            param.requires_grad = False
 
     def forward(self, x) : 
         features = self.encoder(x)
