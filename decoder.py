@@ -70,7 +70,7 @@ def reshape_transformer_output(z, embed_dim, h, w, patch_size):
 
 
 # === 2D Decoder === #
-class UNETRDecoder1(nn.Module):
+class UNETRDecoder14(nn.Module):
     def __init__(self, embed_dim=768, patch_size = 14, input_dim=3, output_dim=3):
         super().__init__()
 
@@ -151,7 +151,7 @@ class UNETRDecoder1(nn.Module):
         return output
     
     
-class UNETRDecoder2(nn.Module): 
+class UNETRDecoder16(nn.Module): 
     def __init__(self, embed_dim=768, patch_size = 16, input_dim=3, output_dim=3):
         super().__init__()
 
