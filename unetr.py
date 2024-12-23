@@ -1,5 +1,5 @@
 import UNET.seg_unet.decoder as decoder
-from UNET.seg_unet.decoder import UNETRDecoder1, UNETRDecoder2, DummyEncoder, SAMDecoder
+from UNET.seg_unet.decoder import UNETRDecoder14, UNETRDecoder16, DummyEncoder, SAMDecoder
 from UNET.seg_unet.encoder import Dinov2Encoder, BLIPEncoder, OpenClipEncoder ,BEiTv2Encoder, SamEncoder
 import sys
 import os
@@ -39,7 +39,7 @@ class DINOUNETR(nn.Module):
         self.output_dim = output_dim
         
         self.encoder = Dinov2Encoder()
-        self.decoder = UNETRDecoder1(embed_dim=self.embed_dim, patch_size=self.patch_size, input_dim=self.input_dim, output_dim=self.output_dim)
+        self.decoder = UNETRDecoder14(embed_dim=self.embed_dim, patch_size=self.patch_size, input_dim=self.input_dim, output_dim=self.output_dim)
     
     def forward(self, x):
         features = self.encoder(x)
@@ -57,7 +57,7 @@ class BeiTUNETR(nn.Module):
         self.output_dim = output_dim
         
         self.encoder = BEiTv2Encoder()
-        self.decoder = UNETRDecoder2(embed_dim=self.embed_dim, patch_size=self.patch_size, input_dim=self.input_dim, output_dim=self.output_dim) 
+        self.decoder = UNETRDecoder16(embed_dim=self.embed_dim, patch_size=self.patch_size, input_dim=self.input_dim, output_dim=self.output_dim) 
     def forward(self, x):
         features = self.encoder(x)
         print(f'encoder_features : {len(features)}, {features[0].shape}')
@@ -75,7 +75,7 @@ class BLIPUNETR(nn.Module):
         self.output_dim = output_dim
         
         self.encoder = BLIPEncoder()
-        self.decoder = UNETRDecoder2(embed_dim=self.embed_dim, patch_size=self.patch_size, input_dim=self.input_dim, output_dim=self.output_dim)
+        self.decoder = UNETRDecoder16(embed_dim=self.embed_dim, patch_size=self.patch_size, input_dim=self.input_dim, output_dim=self.output_dim)
     
     def forward(self, x):
         features = self.encoder(x)
@@ -94,7 +94,7 @@ class OpenClipUNETR(nn.Module):
         self.output_dim = output_dim
         
         self.encoder = OpenClipEncoder()
-        self.decoder = UNETRDecoder2(embed_dim=self.embed_dim, patch_size=self.patch_size, input_dim=self.input_dim, output_dim=self.output_dim)
+        self.decoder = UNETRDecoder16(embed_dim=self.embed_dim, patch_size=self.patch_size, input_dim=self.input_dim, output_dim=self.output_dim)
     
     def forward(self, x):
         features = self.encoder(x)
