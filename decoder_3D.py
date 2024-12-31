@@ -61,8 +61,8 @@ def reshape_transformer_output_3d(z, embed_dim, h, w, d, patch_size):
     num_patches = (h // patch_size) * (w // patch_size)
     if num == num_patches + 1:  # CLS 토큰이 있는 경우
         z = z[:, :, 1:, :]  # CLS 토큰 제거
-    h_patches = h // patch_size # 16
-    w_patches = w // patch_size # 16
+    h_patches = h // patch_size 
+    w_patches = w // patch_size 
     return z.permute(0, 3, 1, 2).reshape(batch, embed_dim, h_patches, w_patches, D) #num => h * w
 
 class UNETRDecoder3D(nn.Module):
@@ -121,13 +121,13 @@ class UNETRDecoder3D(nn.Module):
 
     def forward(self, x, features):
         z0, z3, z6, z9, z12 = x, *features
-        B, D,  H, W, C = x.shape
-        
+        B, D, C, H, W = x.shape
+        z0 = z0.permute(0,2,3,4,1)
         z3 = reshape_transformer_output_3d(z3, self.embed_dim, H, W, D, self.patch_size)
         z6 = reshape_transformer_output_3d(z6, self.embed_dim, H, W, D, self.patch_size)
         z9 = reshape_transformer_output_3d(z9, self.embed_dim, H, W, D, self.patch_size)
         z12 = reshape_transformer_output_3d(z12, self.embed_dim, H, W, D, self.patch_size)
-
+        # print(f"z0 : {z0.shape}, z3 : {z3.shape}, z6 : {z6.shape}, z9 : {z9.shape}, z12 : {z12.shape}")
         # Decoder operations
         z12 = self.decoder12_upsampler(z12)  # 512
         z9 = self.decoder9(z9)  # 512
@@ -139,10 +139,11 @@ class UNETRDecoder3D(nn.Module):
         z0 = self.decoder0(z0)  # 64
         output = self.decoder0_header(torch.cat([z0, z3], dim=1)) 
         return output
-        
+
+
 # === 3D 통합 모델 === #
 class DummyEncoder(nn.Module):
-    def __init__(self, batch_size=1, num_tokens=256, embed_dim=768):
+    def __init__(self, batch_size=1, num_tokens=257, embed_dim=768):
         super(DummyEncoder, self).__init__()
         self.batch_size = batch_size
         self.num_tokens = num_tokens  
@@ -159,8 +160,9 @@ class DummyEncoder(nn.Module):
         z12 = torch.randn(self.batch_size, self.d,self.num_tokens, self.embed_dim)
         
         return [z3, z6, z9, z12]
+    
 class UNETR(nn.Module):
-    def __init__(self, encoder, embed_dim=768, patch_size = 16, input_dim=3, output_dim=3):
+    def __init__(self, encoder, embed_dim=768, patch_size = 14, input_dim=3, output_dim=3):
         super().__init__()
         self.encoder = encoder
         self.decoder = UNETRDecoder3D(embed_dim,patch_size, input_dim, output_dim)
@@ -174,8 +176,9 @@ class UNETR(nn.Module):
    
 #Text code
 if __name__ == '__main__':
-    model = UNETR(encoder=DummyEncoder(),patch_size = 16)
-    x = torch.randn(1, 4, 3, 256, 256) # B, D, C, H, W
+    model = UNETR(encoder=DummyEncoder())
+    x = torch.randn(1, 4, 3, 224, 224) # B, D, C, H, W
     print(f"inpt shape : {x.shape}")
     features = model(x)
     print(f"output shape : {features.shape}")
+
