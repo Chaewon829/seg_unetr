@@ -127,11 +127,11 @@ class SamEncoder(nn.Module):
             for i, layer in enumerate(self.model.layers):
                 x = layer(x)
                 if isinstance(x, tuple):
-                    x = x[0]  # 첫 번째 요소만 사용
+                    x = x[0] 
                     b, h, w, emb_dim = x.size()
                 
                 if i + 1 in [3, 6, 9, 12]:
-                    outputs.append(x.view(b, -1,emb_dim))
+                    outputs.append(x) #[B*D, 64, 64, 768]
                 
         
         return outputs 

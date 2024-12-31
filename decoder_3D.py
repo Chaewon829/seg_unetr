@@ -128,6 +128,7 @@ class UNETRDecoder3D(nn.Module):
         z9 = reshape_transformer_output_3d(z9, self.embed_dim, H, W, D, self.patch_size)
         z12 = reshape_transformer_output_3d(z12, self.embed_dim, H, W, D, self.patch_size)
         # print(f"z0 : {z0.shape}, z3 : {z3.shape}, z6 : {z6.shape}, z9 : {z9.shape}, z12 : {z12.shape}")
+        
         # Decoder operations
         z12 = self.decoder12_upsampler(z12)  # 512
         z9 = self.decoder9(z9)  # 512
@@ -139,6 +140,83 @@ class UNETRDecoder3D(nn.Module):
         z0 = self.decoder0(z0)  # 64
         output = self.decoder0_header(torch.cat([z0, z3], dim=1)) 
         return output
+
+class SAMDecoder3D(nn.Module):
+    def __init__(self, embed_dim=768, patch_size=16, input_dim=3, output_dim=3):
+        super().__init__()
+        self.input_dim = input_dim
+        self.output_dim = output_dim
+        self.embed_dim = embed_dim
+        self.patch_size = patch_size
+
+        # Decoder layers
+        self.decoder0 = nn.Sequential(
+            Conv3DBlock(input_dim, 32, 3),
+            Conv3DBlock(32, 64, 3)
+        )
+
+        self.decoder3 = nn.Sequential(
+            Deconv3DBlock(embed_dim, 512),
+            Deconv3DBlock(512, 256),
+            Deconv3DBlock(256, 128)
+        )
+
+        self.decoder6 = nn.Sequential(
+            Deconv3DBlock(embed_dim, 512),
+            Deconv3DBlock(512, 256)
+        )
+
+        self.decoder9 = Deconv3DBlock(embed_dim, 512)
+
+        self.decoder12_upsampler = SingleDeconv3DBlock(embed_dim, 512)
+
+        self.decoder9_upsampler = nn.Sequential(
+            Conv3DBlock(1024, 512),
+            Conv3DBlock(512, 512),
+            SingleDeconv3DBlock(512, 256)
+        )
+
+        self.decoder6_upsampler = nn.Sequential(
+            Conv3DBlock(512, 256),
+            Conv3DBlock(256, 256),
+            SingleDeconv3DBlock(256, 128)
+        )
+
+        self.decoder3_upsampler = nn.Sequential(
+            Conv3DBlock(256, 128),
+            Conv3DBlock(128, 128),
+            SingleDeconv3DBlock(128, 64),
+            nn.Conv3d(64, 64, kernel_size=3, stride=1, padding=1)
+        )
+
+        self.decoder0_header = nn.Sequential(
+            Conv3DBlock(128, 64),
+            Conv3DBlock(64, 64),
+            SingleConv3DBlock(64, output_dim, 1)
+        )
+
+    def forward(self, x, features):
+        z0, z3, z6, z9, z12 = x, *features
+        B, D, C, H, W = x.shape    
+        z0 = z0.permute(0,2,3,4,1) #B, C, H, W, D
+        z3 = z3.permute(0,4,2,3,1) #B, 768, h, w, D
+        z6 = z6.permute(0,4,2,3,1) #B, 768, h, w, D
+        z9 = z9.permute(0,4,2,3,1) #B, 768, h, w, D
+        z12 = z12.permute(0,4,2,3,1) #B, 768, h, w, D
+        # print(f"z0 : {z0.shape}, z3 : {z3.shape}, z6 : {z6.shape}, z9 : {z9.shape}, z12 : {z12.shape}")
+
+        # Decoder operations
+        z12 = self.decoder12_upsampler(z12)  # 512
+        z9 = self.decoder9(z9)  # 512
+        z9 = self.decoder9_upsampler(torch.cat([z9, z12], dim=1)) 
+        z6 = self.decoder6(z6)  # 256
+        z6 = self.decoder6_upsampler(torch.cat([z6, z9], dim=1)) 
+        z3 = self.decoder3(z3)  # 128
+        z3 = self.decoder3_upsampler(torch.cat([z3, z6], dim=1)) 
+        z0 = self.decoder0(z0)  # 64
+        output = self.decoder0_header(torch.cat([z0, z3], dim=1)) 
+        return output
+    
 
 
 # === 3D 통합 모델 === #
