@@ -1,26 +1,17 @@
-import UNET.seg_unet.decoder as decoder
-from UNET.seg_unet.decoder import UNETRDecoder14, UNETRDecoder16, DummyEncoder, SAMDecoder
-from UNET.seg_unet.encoder import Dinov2Encoder, BLIPEncoder, OpenClipEncoder ,BEiTv2Encoder, SamEncoder
+import decoder as decoder
+from decoder import UNETRDecoder14, UNETRDecoder16, DummyEncoder, SAMDecoder
+from encoder import Dinov2Encoder, BLIPEncoder, OpenClipEncoder ,BEiTv2Encoder, SamEncoder
 import sys
 import os
 import torch
 import torch.nn as nn
 
-encoders = {
-    'dinov2': Dinov2Encoder,
-    'blip': BLIPEncoder,
-    'openclip': OpenClipEncoder
-}
-
-decoder = {
-    'unetr1': UNETRDecoder1
-}
 
 class TESTUNETR(nn.Module):
     def __init__(self, embed_dim=768, patch_size = 16, input_dim=3, output_dim=3):
         super().__init__()
         self.encoder = DummyEncoder()
-        self.decoder = UNETRDecoder1(embed_dim,patch_size, input_dim, output_dim)
+        self.decoder = UNETRDecoder14(embed_dim,patch_size, input_dim, output_dim)
         # Freeze encoder parameters
         for param in self.encoder.parameters():
             param.requires_grad = False
@@ -145,8 +136,7 @@ class SAMUNETR(nn.Module) :
         return output
     
 
-# class MedSAMUNETR(nn.Module) :
-#     pass 
+
 
 
 
@@ -156,7 +146,7 @@ class SAMUNETR(nn.Module) :
 if __name__ == '__main__':
     model = SAMUNETR()
     print(model)
-    x = torch.randn(1, 3, 1024, 1024)
+    x = torch.randn( 1, 3,1024, 1024) # B*D, C, H, W
     output = model(x)
     print(f"output_shape : {output.shape}")
     
